@@ -9,7 +9,7 @@ class MockWindowToFrontPlatform
     implements WindowToFrontPlatform {
 
   @override
-  Future<String?> getPlatformVersion() => Future.value('42');
+  Future<String?> activate() => Future.value('42');
 }
 
 void main() {
