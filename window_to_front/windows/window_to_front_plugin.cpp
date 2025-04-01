@@ -3,15 +3,11 @@
 // This must be included before many other Windows headers.
 #include <windows.h>
 
-// For getPlatformVersion; remove unless needed for your plugin implementation.
-#include <VersionHelpers.h>
-
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
 #include <memory>
-#include <sstream>
 
 namespace window_to_front {
 
@@ -23,7 +19,7 @@ void WindowToFrontPlugin::RegisterWithRegistrar(
           registrar->messenger(), "window_to_front",
           &flutter::StandardMethodCodec::GetInstance());
 
-  auto plugin = std::make_unique<WindowToFrontPlugin>();
+  auto plugin = std::make_unique<WindowToFrontPlugin>(registrar);
 
   channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto &call, auto result) {
@@ -33,24 +29,29 @@ void WindowToFrontPlugin::RegisterWithRegistrar(
   registrar->AddPlugin(std::move(plugin));
 }
 
-WindowToFrontPlugin::WindowToFrontPlugin() {}
+WindowToFrontPlugin::WindowToFrontPlugin(flutter::PluginRegistrarWindows *registrar) 
+  : registrar_(registrar) {}
 
 WindowToFrontPlugin::~WindowToFrontPlugin() {}
 
 void WindowToFrontPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  if (method_call.method_name().compare("getPlatformVersion") == 0) {
-    std::ostringstream version_stream;
-    version_stream << "Windows ";
-    if (IsWindows10OrGreater()) {
-      version_stream << "10+";
-    } else if (IsWindows8OrGreater()) {
-      version_stream << "8";
-    } else if (IsWindows7OrGreater()) {
-      version_stream << "7";
-    }
-    result->Success(flutter::EncodableValue(version_stream.str()));
+  if (method_call.method_name().compare("activate") == 0) {
+    // See https://stackoverflow.com/a/34414846/2142626 for an explanation of how
+    // this raises a window to the foreground.
+    HWND m_hWnd = registrar_->GetView()->GetNativeWindow();
+    HWND hCurWnd = ::GetForegroundWindow();
+    DWORD dwMyID = ::GetCurrentThreadId();
+    DWORD dwCurID = ::GetWindowThreadProcessId(hCurWnd, NULL);
+    ::AttachThreadInput(dwCurID, dwMyID, TRUE);
+    ::SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+    ::SetWindowPos(m_hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
+    ::SetForegroundWindow(m_hWnd);
+    ::SetFocus(m_hWnd);
+    ::SetActiveWindow(m_hWnd);
+    ::AttachThreadInput(dwCurID, dwMyID, FALSE);
+    result->Success();
   } else {
     result->NotImplemented();
   }
