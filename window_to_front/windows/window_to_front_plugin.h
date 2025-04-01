@@ -12,7 +12,7 @@ class WindowToFrontPlugin : public flutter::Plugin {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 
-  WindowToFrontPlugin();
+  WindowToFrontPlugin(flutter::PluginRegistrarWindows *registrar);
 
   virtual ~WindowToFrontPlugin();
 
@@ -20,10 +20,14 @@ class WindowToFrontPlugin : public flutter::Plugin {
   WindowToFrontPlugin(const WindowToFrontPlugin&) = delete;
   WindowToFrontPlugin& operator=(const WindowToFrontPlugin&) = delete;
 
+ private:
   // Called when a method is called on this plugin's channel from Dart.
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue> &method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
+
+  // The registrar for this plugin, for accessing the window.
+  flutter::PluginRegistrarWindows *registrar_;
 };
 
 }  // namespace window_to_front
