@@ -10,8 +10,9 @@ public class WindowToFrontPlugin: NSObject, FlutterPlugin {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-    case "getPlatformVersion":
-      result("macOS " + ProcessInfo.processInfo.operatingSystemVersionString)
+    case "activate":
+      NSApplication.shared.activate(ignoringOtherApps: true)
+      result(nil)
     default:
       result(FlutterMethodNotImplemented)
     }
