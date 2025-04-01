@@ -9,7 +9,7 @@ class MockWindowToFrontPlatform
     implements WindowToFrontPlatform {
 
   @override
-  Future<String?> activate() => Future.value('42');
+  Future<void> activate() => Future.value();
 }
 
 void main() {
@@ -19,11 +19,11 @@ void main() {
     expect(initialPlatform, isInstanceOf<MethodChannelWindowToFront>());
   });
 
-  test('getPlatformVersion', () async {
-    WindowToFront windowToFrontPlugin = WindowToFront();
+  test('activate', () async {
     MockWindowToFrontPlatform fakePlatform = MockWindowToFrontPlatform();
     WindowToFrontPlatform.instance = fakePlatform;
 
-    expect(await windowToFrontPlugin.getPlatformVersion(), '42');
+    await WindowToFront.activate();
+    // Since activate returns void, we just verify it completes without error
   });
 }

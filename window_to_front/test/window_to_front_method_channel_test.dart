@@ -12,7 +12,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       channel,
       (MethodCall methodCall) async {
-        return '42';
+        return null; // Return null since activate returns void
       },
     );
   });
@@ -21,7 +21,9 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await platform.getPlatformVersion(), '42');
+  test('activate', () async {
+    // Just verify that the method completes without throwing an error
+    await platform.activate();
+    expect(true, true); // Dummy assertion to verify test ran
   });
 }
